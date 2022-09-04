@@ -20,7 +20,7 @@ var (
 	dir     = flag.String("dir", ".", "directory root to use for watching")
 	quiet   = flag.Duration("quiet", 800*time.Millisecond, "quiet period after command execution")
 	wait    = flag.Duration("wait", 10*time.Millisecond, "time to wait between change detection and exec")
-	ignore  = flag.String("ignore", "", "path ignore pattern")
+	match   = flag.String("match", "", "path match pattern")
 )
 
 func usage() {
@@ -48,16 +48,16 @@ func main() {
 	go watcher.pipeEvents(fileEvents)
 
 	// if we have an ignore pattern, set up predicate and replace fileEvents
-	if *ignore != "" {
+	if *match != "" {
 		fileEvents = filter(fileEvents, func(e interface{}) bool {
 			fe := e.(*fsnotify.FileEvent)
 			wd, _ := os.Getwd()
 			relPath, _ := filepath.Rel(wd, fe.Name)
-			ignored, err := filepath.Match(*ignore, relPath)
+			matched, err := filepath.Match(*match, relPath)
 			if err != nil {
 				fmt.Fprintln(os.Stderr, "error performing match:", err)
 			}
-			return !ignored
+			return matched
 		})
 	}
 
@@ -99,7 +99,7 @@ func watchAndExecute(fileEvents chan interface{}, cmd string, args []string) {
 			fmt.Fprintln(os.Stderr, "error running:", err)
 		}
 		if *verbose {
-			fmt.Fprintln(os.Stderr, "done.")
+			fmt.Fprintln(os.Stderr, "~ ~ ~ ~ ~ ~ ~ ~ ~ ~ DONE ~ ~ ~ ~ ~ ~ ~ ~ ~ ~")
 		}
 		// drain until quiet period is over
 		drainFor(*quiet, fileEvents)

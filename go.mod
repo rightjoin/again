@@ -1,4 +1,4 @@
-module github.com/tmc/watcher
+module github.com/rightjoin/again
 
 go 1.16
 
